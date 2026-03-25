@@ -3,52 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🚨 목적지 사수 알람 (수익 & 풀 DB)</title>
+    <title>🚨 목적지 사수 알람</title>
     <style>
-        :root { --matrix-green: #39ff14; --neon-red: #ff003c; --gold: #ffd700; --coupang-blue: #0073e9; --coupang-red: #e52528; --bg-color: #0a0a0c; }
+        :root { --matrix-green: #39ff14; --neon-red: #ff003c; --gold: #ffd700; --coupang-blue: #0073e9; --coupang-red: #e52528; --bg-color: #0a0a0c; --kakao-yellow: #fee500; }
         @font-face { font-family: 'DungGeunMo'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff'); font-weight: normal; font-style: normal; }
         
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'DungGeunMo', sans-serif; background: var(--bg-color); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: background 0.1s; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'DungGeunMo', sans-serif; background: var(--bg-color); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow: hidden; transition: background 0.1s; }
         body.alarm-on { animation: bloody-flash 0.5s infinite; }
 
-        .app-title { position: absolute; top: 30px; font-size: 1.4rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); font-family: 'DungGeunMo';}
+        /* 타이틀 위치 및 크기 최적화 */
+        .app-title { position: relative; margin-top: 20px; font-size: 1.3rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
 
-        .radar-box { position: relative; width: 240px; height: 240px; border-radius: 50%; border: 2px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5); background: repeating-radial-gradient(circle, #0a0a0c 0, #0a0a0c 20px, #1a1a1c 21px, #0a0a0c 22px); margin-bottom: 20px; transition: 0.3s; }
+        /* 레이더 박스: 크기를 240 -> 210으로 줄여 공간 확보 */
+        .radar-box { position: relative; width: 210px; height: 210px; border-radius: 50%; border: 2px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; background: repeating-radial-gradient(circle, #0a0a0c 0, #0a0a0c 20px, #1a1a1c 21px, #0a0a0c 22px); margin: 20px 0; transition: 0.3s; }
         .radar-box::before { content: ''; position: absolute; top: 0; left: 50%; width: 50%; height: 50%; background: linear-gradient(90deg, rgba(57,255,20,0.15) 0%, transparent 100%); transform-origin: bottom left; animation: radar-spin 2s linear infinite; display: none; }
         .radar-box.tracking::before { display: block; }
         
-        .status-title { font-size: 1rem; color: #888; z-index: 10; margin-bottom: 5px; font-family: 'DungGeunMo';}
-        .distance-display { font-size: 3rem; color: #fff; font-weight: bold; text-shadow: 0 0 20px rgba(255,255,255,0.3); z-index: 10; transition: 0.3s; font-family: 'DungGeunMo';}
-        .distance-display.active { color: var(--matrix-green); text-shadow: 0 0 20px var(--matrix-green); font-size: 3.5rem; }
+        .status-title { font-size: 0.9rem; color: #888; z-index: 10; margin-bottom: 5px; }
+        .distance-display { font-size: 2.5rem; color: #fff; font-weight: bold; text-shadow: 0 0 20px rgba(255,255,255,0.3); z-index: 10; transition: 0.3s; }
+        .distance-display.active { color: var(--matrix-green); font-size: 3rem; }
 
-        .control-panel { width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 10px; z-index: 20; position: relative; }
+        .control-panel { width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 8px; z-index: 20; }
         
-        .search-container { position: relative; width: 100%; }
-        input[type="text"] { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid #333; background: #1a1a1c; color: #fff; font-size: 0.8rem; font-family: 'DungGeunMo'; text-align: center; box-sizing: border-box; outline: none; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        input[type="text"]:focus { border-color: var(--matrix-green); box-shadow: 0 0 15px rgba(57,255,20,0.3); }
+        /* 입력창 폰트 크기 조절 */
+        input[type="text"] { width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #333; background: #1a1a1c; color: #fff; font-size: 1rem; font-family: 'DungGeunMo'; text-align: center; box-sizing: border-box; outline: none; transition: 0.2s; }
+        input[type="text"]:focus { border-color: var(--matrix-green); }
         
-        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #222; border: 1px solid #444; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 99; display: none; margin-top: 5px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
-        .autocomplete-list div { padding: 15px; cursor: pointer; font-size: 1.1rem; border-bottom: 1px solid #333; transition: background 0.1s; font-family: 'DungGeunMo';}
-        .autocomplete-list div:hover { background: var(--matrix-green); color: #000; font-weight: bold; }
+        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #222; border: 1px solid #444; border-radius: 8px; max-height: 180px; overflow-y: auto; z-index: 99; display: none; margin-top: 5px; }
+        .autocomplete-list div { padding: 12px; cursor: pointer; font-size: 1rem; border-bottom: 1px solid #333; }
 
-        .btn { padding: 15px; border: none; border-radius: 12px; font-size: 1.2rem; font-family: 'DungGeunMo'; cursor: pointer; font-weight: bold; transition: 0.1s; width: 100%; }
-        .btn-start { background: var(--matrix-green); color: #000; box-shadow: 0 0 20px rgba(57,255,20,0.4); margin-top: 10px;}
-        .btn-start:active { transform: scale(0.95); }
-        .btn-stop { background: var(--neon-red); color: #fff; display: none; box-shadow: 0 0 20px rgba(255,0,60,0.5); margin-top: 10px;}
-        .btn-stop:active { transform: scale(0.95); }
+        .btn { padding: 14px; border: none; border-radius: 12px; font-size: 1.1rem; font-family: 'DungGeunMo'; cursor: pointer; font-weight: bold; transition: 0.1s; width: 100%; }
+        .btn-start { background: var(--matrix-green); color: #000; box-shadow: 0 0 15px rgba(57,255,20,0.3); }
+        .btn-stop { background: var(--neon-red); color: #fff; display: none; }
 
-        .btn-coffee { background: transparent; border: 1px solid var(--gold); color: var(--gold); margin-top: 15px; box-shadow: inset 0 0 10px rgba(255,215,0,0.1); }
-        .btn-coffee:active { background: var(--gold); color: #000; }
+        /* 💛 카카오페이 커피 버튼 스타일 */
+        .btn-coffee { background: var(--kakao-yellow); color: #3c1e1e; margin-top: 5px; border: 1px solid #000; font-size: 0.9rem; padding: 10px; }
+        .btn-coffee:active { background: #fada0a; }
 
-        .coupang-banner { 
-            display: block; margin-top: 10px; background: #fff; border-radius: 12px; padding: 15px; 
-            text-align: center; text-decoration: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            border: 2px solid transparent; transition: 0.2s; animation: pulse-border 2s infinite;
-        }
-        .coupang-banner:active { transform: scale(0.97); }
-        .coupang-title { color: var(--coupang-red); font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; font-family: sans-serif;}
-        .coupang-desc { color: #000; font-size: 1.1rem; line-height: 1.4; font-family: sans-serif; font-weight: bold;}
-        .coupang-highlight { color: var(--coupang-blue); }
+        .coupang-banner { display: block; margin-top: 5px; background: #fff; border-radius: 12px; padding: 12px; text-align: center; text-decoration: none; border: 2px solid transparent; animation: pulse-border 2s infinite; }
+        .coupang-title { color: var(--coupang-red); font-size: 0.75rem; font-weight: bold; margin-bottom: 2px; font-family: sans-serif;}
+        .coupang-desc { color: #000; font-size: 0.9rem; line-height: 1.3; font-family: sans-serif; font-weight: bold;}
 
         @keyframes radar-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes bloody-flash { 0%, 100% { background: var(--bg-color); } 50% { background: #4a0000; } }
@@ -65,7 +59,7 @@
     </div>
 
     <div class="control-panel">
-        <div class="search-container" id="searchContainer">
+        <div class="search-container" id="searchContainer" style="position: relative;">
             <input type="text" id="searchInput" placeholder="역 이름 검색 (예: 종로3가)" autocomplete="off">
             <div id="autocompleteList" class="autocomplete-list"></div>
         </div>
@@ -73,20 +67,24 @@
         <button id="startBtn" class="btn btn-start" onclick="startTracking()">감시 시작 (1km 전 알람)</button>
         <button id="stopBtn" class="btn btn-stop" onclick="stopAlarm()">🚨 알람 끄기</button>
         
-        <button class="btn btn-coffee" onclick="copyAccount()">☕ 무사히 내렸다면? 커피 수혈하기</button>
+        <button class="btn btn-coffee" onclick="openKakaoPay()">💛 무사히 내렸다면? 커피 선물하기</button>
 
         <a href="https://link.coupang.com/a/ea4GAT" target="_blank" class="coupang-banner">
             <div class="coupang-title">쿠팡 초특가 로켓배송 🚀</div>
-            <div class="coupang-desc">지하철 꿀잠 필수템!<br><span class="coupang-highlight">노이즈 캔슬링 톰슨 이어폰</span> 특가 확인 👉</div>
+            <div class="coupang-desc">지하철 꿀잠 필수템!<br><span style="color:var(--coupang-blue);">노이즈 캔슬링 이어폰</span> 특가 👉</div>
         </a>
 
-        <div style="font-size: 0.65rem; color: #555; text-align: center; margin-top: 15px; font-family: sans-serif;">
-            이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+        <div style="font-size: 0.55rem; color: #555; text-align: center; margin-top: 5px; font-family: sans-serif;">
+            이 포스팅은 쿠팡 파트너스 활동의 일환으로 수수료를 제공받습니다.
         </div>
     </div>
 
     <script>
-        // 🚇 수도권 전체 지하철역 초대형 DB 완벽 복구!!!
+        // 💛 카카오페이 송금 페이지 열기 함수
+        function openKakaoPay() {
+            window.open("https://qr.kakaopay.com/FRK8J0SAD", "_blank");
+        }
+
         const stationDB = [
             { name: "가락시장", lat: 37.4925, lng: 127.1182 }, { name: "가산디지털단지", lat: 37.4810, lng: 126.8823 },
             { name: "가양", lat: 37.5613, lng: 126.8543 }, { name: "강남", lat: 37.4979, lng: 127.0276 },
@@ -201,15 +199,6 @@
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const radarBox = document.getElementById('radarBox');
-
-        function copyAccount() {
-            const acc = "케이뱅크 100-210-317446";
-            navigator.clipboard.writeText(acc).then(() => {
-                alert("계좌번호 복사 완료!\n\n지하철에서 꿀잠 자고 무사히 내리셨다면\n개발자에게 커피 한 잔 쏘십쇼 형님!\n" + acc);
-            }).catch(err => {
-                alert("계좌번호 복사 실패! 수동으로 입력해주세요: " + acc);
-            });
-        }
 
         searchInput.addEventListener('input', function() {
             const val = this.value.trim();
