@@ -3,206 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🚨 목적지 사수 알람</title>
+    <title>🚨 목적지 사수 알람 (실전용)</title>
     <style>
-        :root { --matrix-green: #39ff14; --neon-red: #ff003c; --bg-color: #0d0d0d; }
+        :root { --matrix-green: #39ff14; --neon-red: #ff003c; --bg-color: #0a0a0c; }
         @font-face { font-family: 'DungGeunMo'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff'); font-weight: normal; font-style: normal; }
         
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'DungGeunMo', sans-serif; background: var(--bg-color); color: #fff; display: flex; flex-direction: column; align-items: center; transition: background 0.1s; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'DungGeunMo', sans-serif; background: var(--bg-color); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: background 0.1s; }
         
-        /* 알람 울릴 때 화면 빨갛게 깜빡임 */
+        /* 알람 울릴 때 화면 시뻘겋게 깜빡임 */
         body.alarm-on { animation: bloody-flash 0.5s infinite; }
 
-        h1 { margin-top: 40px; color: var(--matrix-green); text-shadow: 0 0 10px var(--matrix-green); font-size: 2rem; text-align: center;}
+        /* 간지나는 레이더 배경 */
+        .radar-box { position: relative; width: 280px; height: 280px; border-radius: 50%; border: 2px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5); background: repeating-radial-gradient(circle, #0a0a0c 0, #0a0a0c 20px, #1a1a1c 21px, #0a0a0c 22px); margin-bottom: 30px; }
+        .radar-box::before { content: ''; position: absolute; top: 0; left: 50%; width: 50%; height: 50%; background: linear-gradient(90deg, rgba(57,255,20,0.1) 0%, transparent 100%); transform-origin: bottom left; animation: radar-spin 2s linear infinite; display: none; }
+        .radar-box.tracking::before { display: block; }
         
-        .status-box { background: #1a1a1a; border: 2px solid #333; border-radius: 15px; padding: 20px; width: 85%; max-width: 400px; text-align: center; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .status-box h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: #aaa; }
-        .distance-display { font-size: 3.5rem; color: #fff; font-weight: bold; margin: 10px 0; text-shadow: 0 0 15px rgba(255,255,255,0.5); }
-        
-        .input-group { display: flex; flex-direction: column; width: 85%; max-width: 400px; gap: 10px; margin-bottom: 20px; }
-        input { padding: 15px; border-radius: 10px; border: 1px solid #444; background: #222; color: #fff; font-size: 1rem; font-family: 'DungGeunMo'; text-align: center;}
-        
-        .btn { padding: 15px; border: none; border-radius: 10px; font-size: 1.2rem; font-family: 'DungGeunMo'; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-set { background: #333; color: #fff; border: 1px solid #555; }
-        .btn-start { background: var(--matrix-green); color: #000; box-shadow: 0 0 15px rgba(57,255,20,0.5); margin-top: 10px;}
-        .btn-stop { background: var(--neon-red); color: #fff; display: none; box-shadow: 0 0 15px rgba(255,0,60,0.5); margin-top: 10px;}
-        
-        .btn:active { transform: scale(0.95); }
+        .status-title { font-size: 1rem; color: #888; z-index: 10; margin-bottom: 5px; }
+        .distance-display { font-size: 3.5rem; color: #fff; font-weight: bold; text-shadow: 0 0 20px rgba(255,255,255,0.3); z-index: 10; }
+        .distance-display.active { color: var(--matrix-green); text-shadow: 0 0 20px var(--matrix-green); }
 
-        .log-box { width: 85%; max-width: 400px; height: 100px; background: #000; border: 1px solid var(--matrix-green); color: var(--matrix-green); padding: 10px; font-size: 0.8rem; overflow-y: auto; border-radius: 5px; margin-top: 20px; }
+        /* 깔끔해진 입력 UI */
+        .control-panel { width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; z-index: 20; }
+        
+        select { padding: 18px; border-radius: 12px; border: 2px solid #333; background: #1a1a1c; color: #fff; font-size: 1.2rem; font-family: 'DungGeunMo'; text-align: center; cursor: pointer; appearance: none; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        select:focus { border-color: var(--matrix-green); }
 
-        @keyframes bloody-flash { 0%, 100% { background: var(--bg-color); } 50% { background: #5a0000; } }
+        .btn { padding: 18px; border: none; border-radius: 12px; font-size: 1.3rem; font-family: 'DungGeunMo'; cursor: pointer; font-weight: bold; transition: 0.1s; }
+        .btn-start { background: var(--matrix-green); color: #000; box-shadow: 0 0 20px rgba(57,255,20,0.4); }
+        .btn-start:active { transform: scale(0.95); background: #2de00b; }
+        
+        .btn-stop { background: var(--neon-red); color: #fff; display: none; box-shadow: 0 0 20px rgba(255,0,60,0.5); }
+        .btn-stop:active { transform: scale(0.95); }
+
+        /* 상단 타이틀 */
+        .app-title { position: absolute; top: 40px; font-size: 1.8rem; color: #fff; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+        @keyframes radar-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes bloody-flash { 0%, 100% { background: var(--bg-color); } 50% { background: #4a0000; } }
     </style>
 </head>
 <body>
 
-    <h1>지하철 기절 방지기</h1>
+    <div class="app-title">안심 귀가 알람</div>
 
-    <div class="status-box">
-        <h2>목적지까지 남은 거리</h2>
+    <div class="radar-box" id="radarBox">
+        <div class="status-title" id="statusTitle">남은 거리</div>
         <div id="distanceText" class="distance-display">--- m</div>
-        <p id="statusMsg" style="color: #888; font-size: 0.9rem;">대기 중...</p>
     </div>
 
-    <div class="input-group">
-        <input type="number" id="targetLat" placeholder="목적지 위도 (예: 37.5546)" value="37.5546">
-        <input type="number" id="targetLng" placeholder="목적지 경도 (예: 126.9706)" value="126.9706">
-        <button class="btn btn-set" onclick="setTestTarget()">내 현재 위치를 목적지로 (테스트용)</button>
+    <div class="control-panel">
+        <select id="stationSelect">
+            <option value="" disabled selected>내릴 역을 선택하세요</option>
+            <option value="37.4979,127.0276">강남역 (2호선)</option>
+            <option value="37.5568,126.9245">홍대입구역 (2호선)</option>
+            <option value="37.5546,126.9706">서울역 (1, 4호선)</option>
+            <option value="37.5088,126.8912">신도림역 (1, 2호선)</option>
+            <option value="37.5133,127.1001">잠실역 (2, 8호선)</option>
+            <option value="37.4842,126.9297">신림역 (2호선)</option>
+            <option value="37.5802,127.0465">청량리역 (1호선)</option>
+        </select>
         
-        <button id="startBtn" class="btn btn-start" onclick="startTracking()">감시 시작 (1km 이내 알람)</button>
-        <button id="stopBtn" class="btn btn-stop" onclick="stopAlarm()">🚨 알람 끄기 / 감시 종료</button>
+        <button id="startBtn" class="btn btn-start" onclick="startTracking()">감시 시작 (1km 전 알람)</button>
+        <button id="stopBtn" class="btn btn-stop" onclick="stopAlarm()">🚨 감시 종료 / 알람 끄기</button>
     </div>
-
-    <div class="log-box" id="logBox">시스템 대기중...<br></div>
 
     <script>
         let watchId = null;
         let targetLat = 0;
         let targetLng = 0;
-        const ALARM_DISTANCE = 1000; // 1000미터(1km) 이내 진입 시 알람
+        const ALARM_DISTANCE = 1000; 
         
-        // 오디오 관련 변수
         let audioCtx;
         let sirenInterval;
         let isAlarmPlaying = false;
 
-        const logBox = document.getElementById('logBox');
         const distanceText = document.getElementById('distanceText');
-        const statusMsg = document.getElementById('statusMsg');
+        const statusTitle = document.getElementById('statusTitle');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
-
-        function log(msg) {
-            logBox.innerHTML = msg + "<br>" + logBox.innerHTML;
-        }
-
-        // 테스트를 위해 내 현재 위치를 바로 목적지로 설정하는 기능 (바로 알람 울리게)
-        function setTestTarget() {
-            if (!navigator.geolocation) return alert("이 브라우저는 위치 추적을 지원하지 않습니다.");
-            
-            navigator.geolocation.getCurrentPosition((pos) => {
-                document.getElementById('targetLat').value = pos.coords.latitude;
-                document.getElementById('targetLng').value = pos.coords.longitude;
-                log("테스트용: 현재 위치를 목적지로 설정 완료!");
-            }, (err) => {
-                alert("위치 정보를 가져올 수 없습니다. 권한을 확인해주세요.");
-            });
-        }
+        const stationSelect = document.getElementById('stationSelect');
+        const radarBox = document.getElementById('radarBox');
 
         function startTracking() {
-            targetLat = parseFloat(document.getElementById('targetLat').value);
-            targetLng = parseFloat(document.getElementById('targetLng').value);
-
-            if (isNaN(targetLat) || isNaN(targetLng)) {
-                return alert("정확한 목적지 위도/경도를 입력해주세요!");
+            const selectedValue = stationSelect.value;
+            if (!selectedValue) {
+                return alert("목적지 지하철역을 먼저 선택해주세요!");
             }
+
+            const coords = selectedValue.split(',');
+            targetLat = parseFloat(coords[0]);
+            targetLng = parseFloat(coords[1]);
 
             if (!navigator.geolocation) {
-                return alert("이 브라우저는 위치 추적을 지원하지 않습니다.");
+                return alert("스마트폰의 위치(GPS) 기능을 켜주세요.");
             }
 
-            // 오디오 컨텍스트 초기화 (사용자가 버튼을 눌렀을 때 초기화해야 브라우저 정책상 소리가 남)
+            // 오디오 권한 승인
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+            // UI 상태 변경 (진짜 앱처럼 스무스하게)
+            stationSelect.style.display = 'none';
             startBtn.style.display = 'none';
             stopBtn.style.display = 'block';
-            stopBtn.innerText = "감시 종료 (추적 중...)";
-            stopBtn.style.background = "#555";
-            statusMsg.innerText = "🛰️ GPS 추적 및 거리 계산 중...";
-            statusMsg.style.color = "var(--matrix-green)";
+            stopBtn.innerText = "추적 중 (종료하기)";
+            stopBtn.style.background = "#444";
+            
+            radarBox.classList.add('tracking');
+            statusTitle.innerText = "GPS 스캔 중...";
+            distanceText.classList.add('active');
             document.body.classList.remove('alarm-on');
 
-            log(`목적지 설정됨: ${targetLat.toFixed(4)}, ${targetLng.toFixed(4)}`);
-
-            // 실시간 위치 추적 시작
             watchId = navigator.geolocation.watchPosition(
                 (position) => {
                     const currentLat = position.coords.latitude;
                     const currentLng = position.coords.longitude;
                     
-                    // 남은 거리 계산 (미터 단위)
                     const distance = calculateDistance(currentLat, currentLng, targetLat, targetLng);
+                    
+                    statusTitle.innerText = "도착까지 남은 거리";
                     distanceText.innerText = distance.toLocaleString() + " m";
-                    log(`현재 위치 갱신됨. 남은 거리: ${distance}m`);
 
-                    // 설정 거리 이내로 진입 시 알람!
+                    // 💡 1km 이내 진입 시 알람 발동!
                     if (distance <= ALARM_DISTANCE) {
                         triggerAlarm();
                     }
                 },
                 (error) => {
-                    log(`GPS 에러: ${error.message}`);
-                    statusMsg.innerText = "GPS 신호를 찾는 중...";
+                    statusTitle.innerText = "GPS 신호 탐색 중...";
                 },
                 { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
             );
         }
 
-        // 지구 둥근 거 감안해서 위도/경도로 정확한 미터(m) 거리 구하는 공식 (Haversine formula)
+        // 거리 계산 공식 (미터)
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // 지구 반지름 (미터)
+            const R = 6371e3; 
             const p1 = lat1 * Math.PI / 180;
             const p2 = lat2 * Math.PI / 180;
             const dp = (lat2 - lat1) * Math.PI / 180;
             const dl = (lon2 - lon1) * Math.PI / 180;
 
-            const a = Math.sin(dp / 2) * Math.sin(dp / 2) +
-                      Math.cos(p1) * Math.cos(p2) *
-                      Math.sin(dl / 2) * Math.sin(dl / 2);
+            const a = Math.sin(dp / 2) * Math.sin(dp / 2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return Math.floor(R * c); 
         }
 
         function triggerAlarm() {
-            if (isAlarmPlaying) return; // 이미 울리고 있으면 무시
+            if (isAlarmPlaying) return;
             isAlarmPlaying = true;
             
-            statusMsg.innerText = "🚨 1km 이내 진입! 당장 내리십쇼!! 🚨";
-            statusMsg.style.color = "var(--neon-red)";
+            statusTitle.innerText = "🚨 1km 이내 진입! 🚨";
+            distanceText.style.color = "var(--neon-red)";
+            distanceText.style.textShadow = "0 0 20px var(--neon-red)";
             document.body.classList.add('alarm-on');
             
             stopBtn.innerText = "🚨 알람 끄기 🚨";
             stopBtn.style.background = "var(--neon-red)";
+            radarBox.classList.remove('tracking');
 
-            // 100% 코드로 깎아 만든 사이렌 소리 발생기
             sirenInterval = setInterval(() => {
                 if(!audioCtx) return;
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
                 
-                osc.type = 'sawtooth'; // 찢어지는 듯한 사이렌 파형
-                osc.frequency.setValueAtTime(400, audioCtx.currentTime); // 낮은음에서 시작
-                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.5); // 높은음으로 쫙 올라감
+                osc.type = 'sawtooth'; 
+                osc.frequency.setValueAtTime(500, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.4); 
                 
                 gain.gain.setValueAtTime(1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); // 소리 서서히 줄어듦
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4); 
                 
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 
                 osc.start();
-                osc.stop(audioCtx.currentTime + 0.5);
-            }, 500); // 0.5초마다 반복
+                osc.stop(audioCtx.currentTime + 0.4);
+            }, 400); 
         }
 
         function stopAlarm() {
-            // 위치 추적기 끄기
             if (watchId !== null) {
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
             }
             
-            // 사이렌 끄기
             clearInterval(sirenInterval);
             isAlarmPlaying = false;
-            document.body.classList.remove('alarm-on');
             
+            // UI 초기화
+            document.body.classList.remove('alarm-on');
+            radarBox.classList.remove('tracking');
+            distanceText.classList.remove('active');
+            distanceText.style.color = "#fff";
+            distanceText.style.textShadow = "0 0 20px rgba(255,255,255,0.3)";
+            
+            stationSelect.style.display = 'block';
+            stationSelect.selectedIndex = 0; // 선택 초기화
             startBtn.style.display = 'block';
             stopBtn.style.display = 'none';
+            
             distanceText.innerText = "--- m";
-            statusMsg.innerText = "대기 중...";
-            statusMsg.style.color = "#888";
-            log("추적 및 알람이 종료되었습니다.");
+            statusTitle.innerText = "남은 거리";
         }
     </script>
 </body>
