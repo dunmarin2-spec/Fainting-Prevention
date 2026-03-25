@@ -3,40 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🚨 목적지 사수 알람 (실전용)</title>
+    <title>🚨 목적지 사수 알람 (수익 창출형)</title>
     <style>
-        :root { --matrix-green: #39ff14; --neon-red: #ff003c; --bg-color: #0a0a0c; }
+        :root { --matrix-green: #39ff14; --neon-red: #ff003c; --gold: #ffd700; --bg-color: #0a0a0c; }
         @font-face { font-family: 'DungGeunMo'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff'); font-weight: normal; font-style: normal; }
         
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'DungGeunMo', sans-serif; background: var(--bg-color); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: background 0.1s; }
-        
-        /* 알람 울릴 때 화면 시뻘겋게 깜빡임 */
         body.alarm-on { animation: bloody-flash 0.5s infinite; }
 
-        /* 간지나는 레이더 배경 */
-        .radar-box { position: relative; width: 280px; height: 280px; border-radius: 50%; border: 2px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5); background: repeating-radial-gradient(circle, #0a0a0c 0, #0a0a0c 20px, #1a1a1c 21px, #0a0a0c 22px); margin-bottom: 30px; }
-        .radar-box::before { content: ''; position: absolute; top: 0; left: 50%; width: 50%; height: 50%; background: linear-gradient(90deg, rgba(57,255,20,0.1) 0%, transparent 100%); transform-origin: bottom left; animation: radar-spin 2s linear infinite; display: none; }
+        .app-title { position: absolute; top: 30px; font-size: 1.8rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+        .radar-box { position: relative; width: 240px; height: 240px; border-radius: 50%; border: 2px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5); background: repeating-radial-gradient(circle, #0a0a0c 0, #0a0a0c 20px, #1a1a1c 21px, #0a0a0c 22px); margin-bottom: 20px; transition: 0.3s; }
+        .radar-box::before { content: ''; position: absolute; top: 0; left: 50%; width: 50%; height: 50%; background: linear-gradient(90deg, rgba(57,255,20,0.15) 0%, transparent 100%); transform-origin: bottom left; animation: radar-spin 2s linear infinite; display: none; }
         .radar-box.tracking::before { display: block; }
         
         .status-title { font-size: 1rem; color: #888; z-index: 10; margin-bottom: 5px; }
-        .distance-display { font-size: 3.5rem; color: #fff; font-weight: bold; text-shadow: 0 0 20px rgba(255,255,255,0.3); z-index: 10; }
-        .distance-display.active { color: var(--matrix-green); text-shadow: 0 0 20px var(--matrix-green); }
+        .distance-display { font-size: 3rem; color: #fff; font-weight: bold; text-shadow: 0 0 20px rgba(255,255,255,0.3); z-index: 10; transition: 0.3s; }
+        .distance-display.active { color: var(--matrix-green); text-shadow: 0 0 20px var(--matrix-green); font-size: 3.5rem; }
 
-        /* 깔끔해진 입력 UI */
-        .control-panel { width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; z-index: 20; }
+        .control-panel { width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 10px; z-index: 20; position: relative; }
         
-        select { padding: 18px; border-radius: 12px; border: 2px solid #333; background: #1a1a1c; color: #fff; font-size: 1.2rem; font-family: 'DungGeunMo'; text-align: center; cursor: pointer; appearance: none; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        select:focus { border-color: var(--matrix-green); }
+        .search-container { position: relative; width: 100%; }
+        input[type="text"] { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid #333; background: #1a1a1c; color: #fff; font-size: 1.2rem; font-family: 'DungGeunMo'; text-align: center; box-sizing: border-box; outline: none; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        input[type="text"]:focus { border-color: var(--matrix-green); box-shadow: 0 0 15px rgba(57,255,20,0.3); }
+        
+        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #222; border: 1px solid #444; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 99; display: none; margin-top: 5px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
+        .autocomplete-list div { padding: 15px; cursor: pointer; font-size: 1.1rem; border-bottom: 1px solid #333; transition: background 0.1s; }
+        .autocomplete-list div:hover { background: var(--matrix-green); color: #000; font-weight: bold; }
 
-        .btn { padding: 18px; border: none; border-radius: 12px; font-size: 1.3rem; font-family: 'DungGeunMo'; cursor: pointer; font-weight: bold; transition: 0.1s; }
-        .btn-start { background: var(--matrix-green); color: #000; box-shadow: 0 0 20px rgba(57,255,20,0.4); }
-        .btn-start:active { transform: scale(0.95); background: #2de00b; }
-        
-        .btn-stop { background: var(--neon-red); color: #fff; display: none; box-shadow: 0 0 20px rgba(255,0,60,0.5); }
+        .btn { padding: 18px; border: none; border-radius: 12px; font-size: 1.3rem; font-family: 'DungGeunMo'; cursor: pointer; font-weight: bold; transition: 0.1s; width: 100%; }
+        .btn-start { background: var(--matrix-green); color: #000; box-shadow: 0 0 20px rgba(57,255,20,0.4); margin-top: 10px;}
+        .btn-start:active { transform: scale(0.95); }
+        .btn-stop { background: var(--neon-red); color: #fff; display: none; box-shadow: 0 0 20px rgba(255,0,60,0.5); margin-top: 10px;}
         .btn-stop:active { transform: scale(0.95); }
 
-        /* 상단 타이틀 */
-        .app-title { position: absolute; top: 40px; font-size: 1.8rem; color: #fff; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        /* ☕ 커피 수혈 버튼 추가 */
+        .btn-coffee { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 15px; font-size: 1.1rem; margin-top: 20px; box-shadow: inset 0 0 10px rgba(255,215,0,0.1); }
+        .btn-coffee:active { background: var(--gold); color: #000; }
 
         @keyframes radar-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes bloody-flash { 0%, 100% { background: var(--bg-color); } 50% { background: #4a0000; } }
@@ -44,7 +47,7 @@
 </head>
 <body>
 
-    <div class="app-title">안심 귀가 알람</div>
+    <div class="app-title">지하철 기절 방지기</div>
 
     <div class="radar-box" id="radarBox">
         <div class="status-title" id="statusTitle">남은 거리</div>
@@ -52,156 +55,248 @@
     </div>
 
     <div class="control-panel">
-        <select id="stationSelect">
-            <option value="" disabled selected>내릴 역을 선택하세요</option>
-            <option value="37.4979,127.0276">강남역 (2호선)</option>
-            <option value="37.5568,126.9245">홍대입구역 (2호선)</option>
-            <option value="37.5546,126.9706">서울역 (1, 4호선)</option>
-            <option value="37.5088,126.8912">신도림역 (1, 2호선)</option>
-            <option value="37.5133,127.1001">잠실역 (2, 8호선)</option>
-            <option value="37.4842,126.9297">신림역 (2호선)</option>
-            <option value="37.5802,127.0465">청량리역 (1호선)</option>
-        </select>
+        <div class="search-container" id="searchContainer">
+            <input type="text" id="searchInput" placeholder="역 이름 검색 (예: 종로3가)" autocomplete="off">
+            <div id="autocompleteList" class="autocomplete-list"></div>
+        </div>
         
         <button id="startBtn" class="btn btn-start" onclick="startTracking()">감시 시작 (1km 전 알람)</button>
-        <button id="stopBtn" class="btn btn-stop" onclick="stopAlarm()">🚨 감시 종료 / 알람 끄기</button>
+        <button id="stopBtn" class="btn btn-stop" onclick="stopAlarm()">🚨 알람 끄기</button>
+        
+        <button class="btn btn-coffee" onclick="copyAccount()">☕ 무사히 내렸다면? 커피 수혈하기</button>
     </div>
 
     <script>
-        let watchId = null;
-        let targetLat = 0;
-        let targetLng = 0;
-        const ALARM_DISTANCE = 1000; 
-        
-        let audioCtx;
-        let sirenInterval;
-        let isAlarmPlaying = false;
+        // 🚇 서울/수도권 지하철역 DB (가나다 순)
+        const stationDB = [
+            { name: "가락시장", lat: 37.4925, lng: 127.1182 }, { name: "가산디지털단지", lat: 37.4810, lng: 126.8823 },
+            { name: "가양", lat: 37.5613, lng: 126.8543 }, { name: "강남", lat: 37.4979, lng: 127.0276 },
+            { name: "강남구청", lat: 37.5171, lng: 127.0412 }, { name: "강동", lat: 37.5358, lng: 127.1324 },
+            { name: "강동구청", lat: 37.5303, lng: 127.1205 }, { name: "강변", lat: 37.5350, lng: 127.0946 },
+            { name: "개롱", lat: 37.4980, lng: 127.1348 }, { name: "개포동", lat: 37.4891, lng: 127.0660 },
+            { name: "거여", lat: 37.4931, lng: 127.1441 }, { name: "건대입구", lat: 37.5403, lng: 127.0691 },
+            { name: "경복궁", lat: 37.5757, lng: 126.9731 }, { name: "경찰병원", lat: 37.4959, lng: 127.1245 },
+            { name: "고속터미널", lat: 37.5048, lng: 127.0049 }, { name: "공덕", lat: 37.5432, lng: 126.9515 },
+            { name: "공릉", lat: 37.6257, lng: 127.0728 }, { name: "광나루", lat: 37.5453, lng: 127.1033 },
+            { name: "광명사거리", lat: 37.4792, lng: 126.8548 }, { name: "광화문", lat: 37.5708, lng: 126.9768 },
+            { name: "교대", lat: 37.4934, lng: 127.0142 }, { name: "구로", lat: 37.5030, lng: 126.8819 },
+            { name: "구로디지털단지", lat: 37.4852, lng: 126.9014 }, { name: "구반포", lat: 37.5013, lng: 126.9873 },
+            { name: "구산", lat: 37.6112, lng: 126.9171 }, { name: "구의", lat: 37.5370, lng: 127.0859 },
+            { name: "구파발", lat: 37.6367, lng: 126.9188 }, { name: "국회의사당", lat: 37.5281, lng: 126.9142 },
+            { name: "군자", lat: 37.5571, lng: 127.0795 }, { name: "금호", lat: 37.5480, lng: 127.0153 },
+            { name: "길동", lat: 37.5378, lng: 127.1400 }, { name: "길음", lat: 37.6034, lng: 127.0250 },
+            { name: "김포공항", lat: 37.5624, lng: 126.8012 }, { name: "까치산", lat: 37.5317, lng: 126.8466 },
+            { name: "낙성대", lat: 37.4771, lng: 126.9634 }, { name: "남구로", lat: 37.4860, lng: 126.8870 },
+            { name: "남부터미널", lat: 37.4850, lng: 127.0161 }, { name: "남태령", lat: 37.4641, lng: 126.9890 },
+            { name: "내방", lat: 37.4876, lng: 126.9935 }, { name: "노들", lat: 37.5128, lng: 126.9532 },
+            { name: "노량진", lat: 37.5135, lng: 126.9409 }, { name: "노원", lat: 37.6551, lng: 127.0612 },
+            { name: "녹번", lat: 37.6009, lng: 126.9357 }, { name: "녹사평", lat: 37.5346, lng: 126.9866 },
+            { name: "당고개", lat: 37.6702, lng: 127.0790 }, { name: "당산", lat: 37.5343, lng: 126.9022 },
+            { name: "대림", lat: 37.4925, lng: 126.8955 }, { name: "대방", lat: 37.5133, lng: 126.9263 },
+            { name: "대청", lat: 37.4935, lng: 127.0795 }, { name: "대치", lat: 37.4944, lng: 127.0631 },
+            { name: "도곡", lat: 37.4908, lng: 127.0528 }, { name: "도림천", lat: 37.5142, lng: 126.8827 },
+            { name: "도봉", lat: 37.6795, lng: 127.0460 }, { name: "도봉산", lat: 37.6891, lng: 127.0462 },
+            { name: "독립문", lat: 37.5744, lng: 126.9579 }, { name: "독산", lat: 37.4666, lng: 126.8893 },
+            { name: "동대문", lat: 37.5714, lng: 127.0096 }, { name: "동대문역사문화공원", lat: 37.5651, lng: 127.0078 },
+            { name: "동대입구", lat: 37.5590, lng: 127.0056 }, { name: "동묘앞", lat: 37.5732, lng: 127.0165 },
+            { name: "동작", lat: 37.5029, lng: 126.9802 }, { name: "뚝섬", lat: 37.5471, lng: 127.0473 },
+            { name: "뚝섬유원지", lat: 37.5315, lng: 127.0667 }, { name: "마곡", lat: 37.5601, lng: 126.8253 },
+            { name: "마들", lat: 37.6480, lng: 127.0578 }, { name: "마장", lat: 37.5661, lng: 127.0429 },
+            { name: "마천", lat: 37.4950, lng: 127.1528 }, { name: "마포", lat: 37.5395, lng: 126.9459 },
+            { name: "마포구청", lat: 37.5635, lng: 126.9033 }, { name: "망원", lat: 37.5559, lng: 126.9012 },
+            { name: "매봉", lat: 37.4869, lng: 127.0467 }, { name: "먹골", lat: 37.6106, lng: 127.0777 },
+            { name: "면목", lat: 37.5885, lng: 127.0874 }, { name: "명동", lat: 37.5609, lng: 126.9863 },
+            { name: "목동", lat: 37.5260, lng: 126.8642 }, { name: "몽촌토성", lat: 37.5174, lng: 127.1123 },
+            { name: "무악재", lat: 37.5822, lng: 126.9502 }, { name: "문래", lat: 37.5179, lng: 126.8947 },
+            { name: "문정", lat: 37.4858, lng: 127.1225 }, { name: "미아", lat: 37.6266, lng: 127.0259 },
+            { name: "미아사거리", lat: 37.6132, lng: 127.0300 }, { name: "반포", lat: 37.5081, lng: 127.0116 },
+            { name: "발산", lat: 37.5585, lng: 126.8376 }, { name: "방배", lat: 37.4814, lng: 126.9975 },
+            { name: "방이", lat: 37.5088, lng: 127.1261 }, { name: "방화", lat: 37.5774, lng: 126.8127 },
+            { name: "버티고개", lat: 37.5480, lng: 127.0070 }, { name: "보라매", lat: 37.4998, lng: 126.9204 },
+            { name: "보문", lat: 37.5852, lng: 127.0193 }, { name: "복정", lat: 37.4705, lng: 127.1266 },
+            { name: "봉천", lat: 37.4823, lng: 126.9418 }, { name: "사당", lat: 37.4765, lng: 126.9816 },
+            { name: "사평", lat: 37.5042, lng: 127.0152 }, { name: "삼각지", lat: 37.5343, lng: 126.9731 },
+            { name: "삼성", lat: 37.5088, lng: 127.0631 }, { name: "상도", lat: 37.5028, lng: 126.9477 },
+            { name: "상봉", lat: 37.5967, lng: 127.0850 }, { name: "상왕십리", lat: 37.5643, lng: 127.0293 },
+            { name: "상일동", lat: 37.5567, lng: 127.1738 }, { name: "새절", lat: 37.5911, lng: 126.9136 },
+            { name: "서대문", lat: 37.5657, lng: 126.9666 }, { name: "서울대입구", lat: 37.4812, lng: 126.9527 },
+            { name: "서울숲", lat: 37.5430, lng: 127.0446 }, { name: "서울역", lat: 37.5546, lng: 126.9706 },
+            { name: "서초", lat: 37.4918, lng: 127.0076 }, { name: "석촌", lat: 37.5054, lng: 127.1069 },
+            { name: "선릉", lat: 37.5045, lng: 127.0490 }, { name: "성수", lat: 37.5445, lng: 127.0559 },
+            { name: "성신여대입구", lat: 37.5926, lng: 127.0164 }, { name: "송파", lat: 37.4997, lng: 127.1121 },
+            { name: "수락산", lat: 37.6778, lng: 127.0553 }, { name: "수서", lat: 37.4873, lng: 127.1018 },
+            { name: "숭실대입구", lat: 37.4960, lng: 126.9538 }, { name: "신금호", lat: 37.5545, lng: 127.0203 },
+            { name: "신길", lat: 37.5171, lng: 126.9171 }, { name: "신논현", lat: 37.5045, lng: 127.0250 },
+            { name: "신대방", lat: 37.4874, lng: 126.9131 }, { name: "신대방삼거리", lat: 37.4997, lng: 126.9282 },
+            { name: "신도림", lat: 37.5088, lng: 126.8912 }, { name: "신림", lat: 37.4842, lng: 126.9297 },
+            { name: "신사", lat: 37.5163, lng: 127.0201 }, { name: "신설동", lat: 37.5752, lng: 127.0248 },
+            { name: "신용산", lat: 37.5291, lng: 126.9678 }, { name: "신정", lat: 37.5250, lng: 126.8561 },
+            { name: "신정네거리", lat: 37.5200, lng: 126.8528 }, { name: "신촌", lat: 37.5551, lng: 126.9369 },
+            { name: "신풍", lat: 37.5000, lng: 126.9099 }, { name: "아현", lat: 37.5573, lng: 126.9560 },
+            { name: "안국", lat: 37.5764, lng: 126.9854 }, { name: "암사", lat: 37.5501, lng: 127.1274 },
+            { name: "압구정", lat: 37.5270, lng: 127.0284 }, { name: "압구정로데오", lat: 37.5273, lng: 127.0405 },
+            { name: "애오개", lat: 37.5537, lng: 126.9568 }, { name: "양재", lat: 37.4841, lng: 127.0346 },
+            { name: "양천구청", lat: 37.5123, lng: 126.8658 }, { name: "여의나루", lat: 37.5270, lng: 126.9328 },
+            { name: "여의도", lat: 37.5215, lng: 126.9243 }, { name: "역삼", lat: 37.5006, lng: 127.0364 },
+            { name: "연신내", lat: 37.6189, lng: 126.9208 }, { name: "영등포", lat: 37.5155, lng: 126.9077 },
+            { name: "영등포구청", lat: 37.5256, lng: 126.8966 }, { name: "영등포시장", lat: 37.5226, lng: 126.9051 },
+            { name: "오금", lat: 37.5021, lng: 127.1280 }, { name: "옥수", lat: 37.5404, lng: 127.0186 },
+            { name: "온수", lat: 37.4922, lng: 126.8233 }, { name: "올림픽공원", lat: 37.5161, lng: 127.1307 },
+            { name: "왕십리", lat: 37.5612, lng: 127.0381 }, { name: "용답", lat: 37.5620, lng: 127.0508 },
+            { name: "용두", lat: 37.5740, lng: 127.0380 }, { name: "용산", lat: 37.5298, lng: 126.9648 },
+            { name: "우장산", lat: 37.5487, lng: 126.8363 }, { name: "을지로3가", lat: 37.5662, lng: 126.9926 },
+            { name: "을지로4가", lat: 37.5665, lng: 126.9980 }, { name: "을지로입구", lat: 37.5660, lng: 126.9826 },
+            { name: "응암", lat: 37.5985, lng: 126.9155 }, { name: "이대", lat: 37.5567, lng: 126.9458 },
+            { name: "이촌", lat: 37.5222, lng: 126.9735 }, { name: "이태원", lat: 37.5344, lng: 126.9917 },
+            { name: "일원", lat: 37.4836, lng: 127.0843 }, { name: "잠실", lat: 37.5133, lng: 127.1001 },
+            { name: "잠실나루", lat: 37.5207, lng: 127.1037 }, { name: "잠실새내", lat: 37.5114, lng: 127.0858 },
+            { name: "잠원", lat: 37.5127, lng: 127.0112 }, { name: "장승배기", lat: 37.5048, lng: 126.9391 },
+            { name: "장지", lat: 37.4787, lng: 127.1261 }, { name: "장한평", lat: 37.5614, lng: 127.0646 },
+            { name: "정릉", lat: 37.6033, lng: 127.0135 }, { name: "종각", lat: 37.5701, lng: 126.9830 },
+            { name: "종로3가", lat: 37.5704, lng: 126.9921 }, { name: "종로5가", lat: 37.5709, lng: 127.0018 },
+            { name: "종합운동장", lat: 37.5110, lng: 127.0738 }, { name: "중계", lat: 37.6445, lng: 127.0642 },
+            { name: "중곡", lat: 37.5658, lng: 127.0843 }, { name: "창동", lat: 37.6531, lng: 127.0477 },
+            { name: "천왕", lat: 37.4866, lng: 126.8387 }, { name: "천호", lat: 37.5383, lng: 127.1233 },
+            { name: "철산", lat: 37.4760, lng: 126.8679 }, { name: "청담", lat: 37.5193, lng: 127.0538 },
+            { name: "청량리", lat: 37.5802, lng: 127.0465 }, { name: "총신대입구(이수)", lat: 37.4866, lng: 126.9816 },
+            { name: "충무로", lat: 37.5614, lng: 126.9942 }, { name: "충정로", lat: 37.5599, lng: 126.9636 },
+            { name: "태릉입구", lat: 37.6184, lng: 127.0753 }, { name: "하계", lat: 37.6363, lng: 127.0679 },
+            { name: "학동", lat: 37.5142, lng: 127.0318 }, { name: "학여울", lat: 37.4966, lng: 127.0705 },
+            { name: "한강진", lat: 37.5396, lng: 127.0017 }, { name: "합정", lat: 37.5494, lng: 126.9137 },
+            { name: "행당", lat: 37.5574, lng: 127.0296 }, { name: "혜화", lat: 37.5823, lng: 127.0018 },
+            { name: "홍대입구", lat: 37.5568, lng: 126.9245 }, { name: "홍제", lat: 37.5890, lng: 126.9437 },
+            { name: "화곡", lat: 37.5415, lng: 126.8404 }, { name: "화랑대", lat: 37.6200, lng: 127.0846 },
+            { name: "회현", lat: 37.5585, lng: 126.9782 }, { name: "효창공원앞", lat: 37.5392, lng: 126.9613 },
+            { name: "흑석", lat: 37.5087, lng: 126.9637 }
+        ];
 
+        let targetLat = 0, targetLng = 0, watchId = null;
+        let audioCtx, sirenInterval, isAlarmPlaying = false;
+        const ALARM_DISTANCE = 1000; 
+
+        const searchInput = document.getElementById('searchInput');
+        const autocompleteList = document.getElementById('autocompleteList');
+        const searchContainer = document.getElementById('searchContainer');
         const distanceText = document.getElementById('distanceText');
         const statusTitle = document.getElementById('statusTitle');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
-        const stationSelect = document.getElementById('stationSelect');
         const radarBox = document.getElementById('radarBox');
 
+        // 💰 커피 수혈 계좌 복사 기능
+        function copyAccount() {
+            const acc = "케이뱅크 100-210-317446";
+            navigator.clipboard.writeText(acc).then(() => {
+                alert("계좌번호 복사 완료!\n\n앱 덕분에 무사히 내리셨다면 커피 한 잔 쏘십쇼 형님!\n" + acc);
+            }).catch(err => {
+                alert("계좌번호 복사 실패! 수동으로 입력해주세요: " + acc);
+            });
+        }
+
+        searchInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            autocompleteList.innerHTML = '';
+            
+            if (!val) {
+                autocompleteList.style.display = 'none';
+                return;
+            }
+
+            const matchedStations = stationDB.filter(s => s.name.includes(val));
+            
+            if (matchedStations.length > 0) {
+                autocompleteList.style.display = 'block';
+                matchedStations.forEach(station => {
+                    const div = document.createElement('div');
+                    div.innerHTML = station.name;
+                    div.addEventListener('click', function() {
+                        searchInput.value = station.name;
+                        targetLat = station.lat;
+                        targetLng = station.lng;
+                        autocompleteList.style.display = 'none';
+                    });
+                    autocompleteList.appendChild(div);
+                });
+            } else {
+                autocompleteList.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target !== searchInput) autocompleteList.style.display = 'none';
+        });
+
         function startTracking() {
-            const selectedValue = stationSelect.value;
-            if (!selectedValue) {
-                return alert("목적지 지하철역을 먼저 선택해주세요!");
+            if (targetLat === 0 || targetLng === 0) {
+                return alert("먼저 지하철역을 검색해서 정확히 선택해주세요!");
             }
 
-            const coords = selectedValue.split(',');
-            targetLat = parseFloat(coords[0]);
-            targetLng = parseFloat(coords[1]);
-
-            if (!navigator.geolocation) {
-                return alert("스마트폰의 위치(GPS) 기능을 켜주세요.");
-            }
-
-            // 오디오 권한 승인
+            if (!navigator.geolocation) return alert("스마트폰의 위치(GPS) 기능을 켜주세요.");
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-            // UI 상태 변경 (진짜 앱처럼 스무스하게)
-            stationSelect.style.display = 'none';
+            searchContainer.style.display = 'none';
             startBtn.style.display = 'none';
             stopBtn.style.display = 'block';
-            stopBtn.innerText = "추적 중 (종료하기)";
-            stopBtn.style.background = "#444";
             
             radarBox.classList.add('tracking');
             statusTitle.innerText = "GPS 스캔 중...";
             distanceText.classList.add('active');
-            document.body.classList.remove('alarm-on');
 
             watchId = navigator.geolocation.watchPosition(
                 (position) => {
-                    const currentLat = position.coords.latitude;
-                    const currentLng = position.coords.longitude;
-                    
-                    const distance = calculateDistance(currentLat, currentLng, targetLat, targetLng);
-                    
-                    statusTitle.innerText = "도착까지 남은 거리";
+                    const distance = calculateDistance(position.coords.latitude, position.coords.longitude, targetLat, targetLng);
+                    statusTitle.innerText = `${searchInput.value}까지`;
                     distanceText.innerText = distance.toLocaleString() + " m";
 
-                    // 💡 1km 이내 진입 시 알람 발동!
-                    if (distance <= ALARM_DISTANCE) {
-                        triggerAlarm();
-                    }
+                    if (distance <= ALARM_DISTANCE) triggerAlarm();
                 },
-                (error) => {
-                    statusTitle.innerText = "GPS 신호 탐색 중...";
-                },
+                (error) => { statusTitle.innerText = "GPS 신호 탐색 중..."; },
                 { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
             );
         }
 
-        // 거리 계산 공식 (미터)
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; 
-            const p1 = lat1 * Math.PI / 180;
-            const p2 = lat2 * Math.PI / 180;
-            const dp = (lat2 - lat1) * Math.PI / 180;
-            const dl = (lon2 - lon1) * Math.PI / 180;
-
+            const R = 6371e3, p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
+            const dp = (lat2 - lat1) * Math.PI / 180, dl = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dp / 2) * Math.sin(dp / 2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return Math.floor(R * c); 
+            return Math.floor(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))); 
         }
 
         function triggerAlarm() {
             if (isAlarmPlaying) return;
             isAlarmPlaying = true;
-            
-            statusTitle.innerText = "🚨 1km 이내 진입! 🚨";
+            statusTitle.innerText = "🚨 1km 이내 진입! 기상! 🚨";
             distanceText.style.color = "var(--neon-red)";
             distanceText.style.textShadow = "0 0 20px var(--neon-red)";
             document.body.classList.add('alarm-on');
-            
-            stopBtn.innerText = "🚨 알람 끄기 🚨";
-            stopBtn.style.background = "var(--neon-red)";
             radarBox.classList.remove('tracking');
 
             sirenInterval = setInterval(() => {
                 if(!audioCtx) return;
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                
+                let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
                 osc.type = 'sawtooth'; 
-                osc.frequency.setValueAtTime(500, audioCtx.currentTime); 
-                osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.4); 
-                
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.3); 
                 gain.gain.setValueAtTime(1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4); 
-                
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.4);
-            }, 400); 
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); 
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            }, 300); 
         }
 
         function stopAlarm() {
-            if (watchId !== null) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            
-            clearInterval(sirenInterval);
-            isAlarmPlaying = false;
-            
-            // UI 초기화
+            if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+            clearInterval(sirenInterval); isAlarmPlaying = false;
             document.body.classList.remove('alarm-on');
             radarBox.classList.remove('tracking');
             distanceText.classList.remove('active');
             distanceText.style.color = "#fff";
-            distanceText.style.textShadow = "0 0 20px rgba(255,255,255,0.3)";
             
-            stationSelect.style.display = 'block';
-            stationSelect.selectedIndex = 0; // 선택 초기화
+            searchContainer.style.display = 'block';
             startBtn.style.display = 'block';
             stopBtn.style.display = 'none';
-            
+            searchInput.value = '';
+            targetLat = 0; targetLng = 0;
             distanceText.innerText = "--- m";
             statusTitle.innerText = "남은 거리";
         }
