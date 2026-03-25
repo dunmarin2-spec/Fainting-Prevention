@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🚨 목적지 사수 알람 (수익 창출형)</title>
+    <title>🚨 목적지 사수 알람 (수익 & 풀 DB)</title>
     <style>
-        :root { --matrix-green: #39ff14; --neon-red: #ff003c; --gold: #ffd700; --bg-color: #0a0a0c; }
+        :root { --matrix-green: #39ff14; --neon-red: #ff003c; --gold: #ffd700; --coupang-blue: #0073e9; --coupang-red: #e52528; --bg-color: #0a0a0c; }
         @font-face { font-family: 'DungGeunMo'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff'); font-weight: normal; font-style: normal; }
         
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'DungGeunMo', sans-serif; background: var(--bg-color); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: background 0.1s; }
         body.alarm-on { animation: bloody-flash 0.5s infinite; }
 
-        .app-title { position: absolute; top: 30px; font-size: 1.8rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .app-title { position: absolute; top: 30px; font-size: 1.8rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); font-family: 'DungGeunMo';}
 
         .radar-box { position: relative; width: 240px; height: 240px; border-radius: 50%; border: 2px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5); background: repeating-radial-gradient(circle, #0a0a0c 0, #0a0a0c 20px, #1a1a1c 21px, #0a0a0c 22px); margin-bottom: 20px; transition: 0.3s; }
         .radar-box::before { content: ''; position: absolute; top: 0; left: 50%; width: 50%; height: 50%; background: linear-gradient(90deg, rgba(57,255,20,0.15) 0%, transparent 100%); transform-origin: bottom left; animation: radar-spin 2s linear infinite; display: none; }
         .radar-box.tracking::before { display: block; }
         
-        .status-title { font-size: 1rem; color: #888; z-index: 10; margin-bottom: 5px; }
-        .distance-display { font-size: 3rem; color: #fff; font-weight: bold; text-shadow: 0 0 20px rgba(255,255,255,0.3); z-index: 10; transition: 0.3s; }
+        .status-title { font-size: 1rem; color: #888; z-index: 10; margin-bottom: 5px; font-family: 'DungGeunMo';}
+        .distance-display { font-size: 3rem; color: #fff; font-weight: bold; text-shadow: 0 0 20px rgba(255,255,255,0.3); z-index: 10; transition: 0.3s; font-family: 'DungGeunMo';}
         .distance-display.active { color: var(--matrix-green); text-shadow: 0 0 20px var(--matrix-green); font-size: 3.5rem; }
 
         .control-panel { width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 10px; z-index: 20; position: relative; }
@@ -28,21 +28,31 @@
         input[type="text"]:focus { border-color: var(--matrix-green); box-shadow: 0 0 15px rgba(57,255,20,0.3); }
         
         .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #222; border: 1px solid #444; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 99; display: none; margin-top: 5px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
-        .autocomplete-list div { padding: 15px; cursor: pointer; font-size: 1.1rem; border-bottom: 1px solid #333; transition: background 0.1s; }
+        .autocomplete-list div { padding: 15px; cursor: pointer; font-size: 1.1rem; border-bottom: 1px solid #333; transition: background 0.1s; font-family: 'DungGeunMo';}
         .autocomplete-list div:hover { background: var(--matrix-green); color: #000; font-weight: bold; }
 
-        .btn { padding: 18px; border: none; border-radius: 12px; font-size: 1.3rem; font-family: 'DungGeunMo'; cursor: pointer; font-weight: bold; transition: 0.1s; width: 100%; }
+        .btn { padding: 15px; border: none; border-radius: 12px; font-size: 1.2rem; font-family: 'DungGeunMo'; cursor: pointer; font-weight: bold; transition: 0.1s; width: 100%; }
         .btn-start { background: var(--matrix-green); color: #000; box-shadow: 0 0 20px rgba(57,255,20,0.4); margin-top: 10px;}
         .btn-start:active { transform: scale(0.95); }
         .btn-stop { background: var(--neon-red); color: #fff; display: none; box-shadow: 0 0 20px rgba(255,0,60,0.5); margin-top: 10px;}
         .btn-stop:active { transform: scale(0.95); }
 
-        /* ☕ 커피 수혈 버튼 추가 */
-        .btn-coffee { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 15px; font-size: 1.1rem; margin-top: 20px; box-shadow: inset 0 0 10px rgba(255,215,0,0.1); }
+        .btn-coffee { background: transparent; border: 1px solid var(--gold); color: var(--gold); margin-top: 15px; box-shadow: inset 0 0 10px rgba(255,215,0,0.1); }
         .btn-coffee:active { background: var(--gold); color: #000; }
+
+        .coupang-banner { 
+            display: block; margin-top: 10px; background: #fff; border-radius: 12px; padding: 15px; 
+            text-align: center; text-decoration: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border: 2px solid transparent; transition: 0.2s; animation: pulse-border 2s infinite;
+        }
+        .coupang-banner:active { transform: scale(0.97); }
+        .coupang-title { color: var(--coupang-red); font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; font-family: sans-serif;}
+        .coupang-desc { color: #000; font-size: 1.1rem; line-height: 1.4; font-family: sans-serif; font-weight: bold;}
+        .coupang-highlight { color: var(--coupang-blue); }
 
         @keyframes radar-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes bloody-flash { 0%, 100% { background: var(--bg-color); } 50% { background: #4a0000; } }
+        @keyframes pulse-border { 0%, 100% { border-color: var(--coupang-blue); } 50% { border-color: var(--coupang-red); } }
     </style>
 </head>
 <body>
@@ -64,10 +74,19 @@
         <button id="stopBtn" class="btn btn-stop" onclick="stopAlarm()">🚨 알람 끄기</button>
         
         <button class="btn btn-coffee" onclick="copyAccount()">☕ 무사히 내렸다면? 커피 수혈하기</button>
+
+        <a href="https://link.coupang.com/a/ea4GAT" target="_blank" class="coupang-banner">
+            <div class="coupang-title">쿠팡 초특가 로켓배송 🚀</div>
+            <div class="coupang-desc">지하철 꿀잠 필수템!<br><span class="coupang-highlight">노이즈 캔슬링 톰슨 이어폰</span> 특가 확인 👉</div>
+        </a>
+
+        <div style="font-size: 0.65rem; color: #555; text-align: center; margin-top: 15px; font-family: sans-serif;">
+            이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+        </div>
     </div>
 
     <script>
-        // 🚇 서울/수도권 지하철역 DB (가나다 순)
+        // 🚇 수도권 전체 지하철역 초대형 DB 완벽 복구!!!
         const stationDB = [
             { name: "가락시장", lat: 37.4925, lng: 127.1182 }, { name: "가산디지털단지", lat: 37.4810, lng: 126.8823 },
             { name: "가양", lat: 37.5613, lng: 126.8543 }, { name: "강남", lat: 37.4979, lng: 127.0276 },
@@ -183,11 +202,10 @@
         const stopBtn = document.getElementById('stopBtn');
         const radarBox = document.getElementById('radarBox');
 
-        // 💰 커피 수혈 계좌 복사 기능
         function copyAccount() {
             const acc = "케이뱅크 100-210-317446";
             navigator.clipboard.writeText(acc).then(() => {
-                alert("계좌번호 복사 완료!\n\n앱 덕분에 무사히 내리셨다면 커피 한 잔 쏘십쇼 형님!\n" + acc);
+                alert("계좌번호 복사 완료!\n\n지하철에서 꿀잠 자고 무사히 내리셨다면\n개발자에게 커피 한 잔 쏘십쇼 형님!\n" + acc);
             }).catch(err => {
                 alert("계좌번호 복사 실패! 수동으로 입력해주세요: " + acc);
             });
@@ -196,14 +214,9 @@
         searchInput.addEventListener('input', function() {
             const val = this.value.trim();
             autocompleteList.innerHTML = '';
-            
-            if (!val) {
-                autocompleteList.style.display = 'none';
-                return;
-            }
+            if (!val) { autocompleteList.style.display = 'none'; return; }
 
             const matchedStations = stationDB.filter(s => s.name.includes(val));
-            
             if (matchedStations.length > 0) {
                 autocompleteList.style.display = 'block';
                 matchedStations.forEach(station => {
@@ -211,15 +224,12 @@
                     div.innerHTML = station.name;
                     div.addEventListener('click', function() {
                         searchInput.value = station.name;
-                        targetLat = station.lat;
-                        targetLng = station.lng;
+                        targetLat = station.lat; targetLng = station.lng;
                         autocompleteList.style.display = 'none';
                     });
                     autocompleteList.appendChild(div);
                 });
-            } else {
-                autocompleteList.style.display = 'none';
-            }
+            } else { autocompleteList.style.display = 'none'; }
         });
 
         document.addEventListener('click', function(e) {
@@ -227,10 +237,7 @@
         });
 
         function startTracking() {
-            if (targetLat === 0 || targetLng === 0) {
-                return alert("먼저 지하철역을 검색해서 정확히 선택해주세요!");
-            }
-
+            if (targetLat === 0 || targetLng === 0) return alert("먼저 지하철역을 검색해서 정확히 선택해주세요!");
             if (!navigator.geolocation) return alert("스마트폰의 위치(GPS) 기능을 켜주세요.");
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -247,7 +254,6 @@
                     const distance = calculateDistance(position.coords.latitude, position.coords.longitude, targetLat, targetLng);
                     statusTitle.innerText = `${searchInput.value}까지`;
                     distanceText.innerText = distance.toLocaleString() + " m";
-
                     if (distance <= ALARM_DISTANCE) triggerAlarm();
                 },
                 (error) => { statusTitle.innerText = "GPS 신호 탐색 중..."; },
@@ -274,8 +280,7 @@
             sirenInterval = setInterval(() => {
                 if(!audioCtx) return;
                 let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-                osc.type = 'sawtooth'; 
-                osc.frequency.setValueAtTime(600, audioCtx.currentTime); 
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); 
                 osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.3); 
                 gain.gain.setValueAtTime(1, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); 
@@ -295,10 +300,8 @@
             searchContainer.style.display = 'block';
             startBtn.style.display = 'block';
             stopBtn.style.display = 'none';
-            searchInput.value = '';
-            targetLat = 0; targetLng = 0;
-            distanceText.innerText = "--- m";
-            statusTitle.innerText = "남은 거리";
+            searchInput.value = ''; targetLat = 0; targetLng = 0;
+            distanceText.innerText = "--- m"; statusTitle.innerText = "남은 거리";
         }
     </script>
 </body>
