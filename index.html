@@ -2,19 +2,25 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🚨 목적지 사수 알람</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>🚨 목적지 사수 알람 - 찬둥 에디션</title>
     <style>
+        /* 💡 필기체 스타일을 위한 폰트 추가 */
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');
+
         :root { --matrix-green: #39ff14; --neon-red: #ff003c; --gold: #ffd700; --coupang-blue: #0073e9; --coupang-red: #e52528; --bg-color: #0a0a0c; --kakao-yellow: #fee500; }
         @font-face { font-family: 'DungGeunMo'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff'); font-weight: normal; font-style: normal; }
         
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'DungGeunMo', sans-serif; background: var(--bg-color); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow: hidden; transition: background 0.1s; }
         body.alarm-on { animation: bloody-flash 0.5s infinite; }
 
+        /* 💡 찬둥의 필기체 시그니처 스타일 */
+        .chan-doong-signature { font-family: 'Nanum Pen Script', cursive; font-size: 20px; color: var(--matrix-green); transform: rotate(-10deg); margin-bottom: -15px; margin-left: -60px; z-index: 100; opacity: 0.9; }
+
         /* 타이틀 위치 및 크기 최적화 */
         .app-title { position: relative; margin-top: 20px; font-size: 1.3rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
 
-        /* 레이더 박스: 크기를 240 -> 210으로 줄여 공간 확보 */
+        /* 레이더 박스 */
         .radar-box { position: relative; width: 210px; height: 210px; border-radius: 50%; border: 2px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; background: repeating-radial-gradient(circle, #0a0a0c 0, #0a0a0c 20px, #1a1a1c 21px, #0a0a0c 22px); margin: 20px 0; transition: 0.3s; }
         .radar-box::before { content: ''; position: absolute; top: 0; left: 50%; width: 50%; height: 50%; background: linear-gradient(90deg, rgba(57,255,20,0.15) 0%, transparent 100%); transform-origin: bottom left; animation: radar-spin 2s linear infinite; display: none; }
         .radar-box.tracking::before { display: block; }
@@ -25,7 +31,6 @@
 
         .control-panel { width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 8px; z-index: 20; }
         
-        /* 입력창 폰트 크기 조절 */
         input[type="text"] { width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #333; background: #1a1a1c; color: #fff; font-size: 1rem; font-family: 'DungGeunMo'; text-align: center; box-sizing: border-box; outline: none; transition: 0.2s; }
         input[type="text"]:focus { border-color: var(--matrix-green); }
         
@@ -36,7 +41,6 @@
         .btn-start { background: var(--matrix-green); color: #000; box-shadow: 0 0 15px rgba(57,255,20,0.3); }
         .btn-stop { background: var(--neon-red); color: #fff; display: none; }
 
-        /* 💛 카카오페이 커피 버튼 스타일 */
         .btn-coffee { background: var(--kakao-yellow); color: #3c1e1e; margin-top: 5px; border: 1px solid #000; font-size: 0.9rem; padding: 10px; }
         .btn-coffee:active { background: #fada0a; }
 
@@ -51,6 +55,7 @@
 </head>
 <body>
 
+    <span class="chan-doong-signature">찬둥의</span>
     <div class="app-title">지하철 기절 방지기</div>
 
     <div class="radar-box" id="radarBox">
@@ -204,7 +209,6 @@
             const val = this.value.trim();
             autocompleteList.innerHTML = '';
             if (!val) { autocompleteList.style.display = 'none'; return; }
-
             const matchedStations = stationDB.filter(s => s.name.includes(val));
             if (matchedStations.length > 0) {
                 autocompleteList.style.display = 'block';
@@ -229,15 +233,12 @@
             if (targetLat === 0 || targetLng === 0) return alert("먼저 지하철역을 검색해서 정확히 선택해주세요!");
             if (!navigator.geolocation) return alert("스마트폰의 위치(GPS) 기능을 켜주세요.");
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
             searchContainer.style.display = 'none';
             startBtn.style.display = 'none';
             stopBtn.style.display = 'block';
-            
             radarBox.classList.add('tracking');
             statusTitle.innerText = "GPS 스캔 중...";
             distanceText.classList.add('active');
-
             watchId = navigator.geolocation.watchPosition(
                 (position) => {
                     const distance = calculateDistance(position.coords.latitude, position.coords.longitude, targetLat, targetLng);
@@ -265,7 +266,6 @@
             distanceText.style.textShadow = "0 0 20px var(--neon-red)";
             document.body.classList.add('alarm-on');
             radarBox.classList.remove('tracking');
-
             sirenInterval = setInterval(() => {
                 if(!audioCtx) return;
                 let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
@@ -285,7 +285,6 @@
             radarBox.classList.remove('tracking');
             distanceText.classList.remove('active');
             distanceText.style.color = "#fff";
-            
             searchContainer.style.display = 'block';
             startBtn.style.display = 'block';
             stopBtn.style.display = 'none';
